@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+
+<project name="carma.gameexercise" basedir="." default="usage">
+  <property file="${basedir}/build.properties"/>
+
+  <property name="src.home" value="${basedir}/src/java/main"/>
+  <property name="test.home" value="${basedir}/src/java/test"/>
+  <property name="build.home" value="${basedir}/build"/>
+  <property name="etc.dir" value="${basedir}/etc"/>
+  <property name="lib.dir" value="${basedir}/lib"/>
+  <property name="dist.dir" value="${basedir}/dist"/>
+  <property name="reports.tests" value="${basedir}/test_reports"/>
+  <property name="app.name" value="carma.gameexercise" />
+
+  <property name="compile.debug"       value="true" />
+  <property name="compile.deprecation" value="false" />
+  <property name="compile.optimize"    value="true" />
+
+  <property name="classes.home" value="${build.home}/classes"/>
+
+  <path id="compile.classpath">
+    <fileset dir="${lib.dir}">
+      <include name="*.jar"/>
+    </fileset>    
+    <dirset dir="${build.home}">
+      <include name="classes/"/>
+    </dirset>
+  </path>
+
+  <target name="run" description="run the app"
+	  depends="compile">
+
+    <java classname="ma.car.exercise.emulator.GameEmulator">
+      <classpath refid="compile.classpath"/>
+    </java>
+
+  </target>
+
+  <target name="usage">
+    <echo message=""/>
+    <echo message="${app.name} build file"/>
+    <echo message="-----------------------------------"/>
+    <echo message=""/>
+    <echo message="Available targets are:"/>
+    <echo message=""/>
+    <echo message="compile   --> Build the application"/>
+    <echo message="jar       --> Created executable jar file"/>
+    <echo message="run       --> execute the applications"/>
+    <echo message=""/>
+  </target>
+
+  <target name="prepare">
+    <!-- Create build directories as needed -->
+    <mkdir  dir="${classes.home}"/>
+  </target>
+  
+  <target name="compile" description="Compile main source tree java files"
+	  depends="prepare">
+    
+    <mkdir    dir="${classes.home}"/>
+    <javac srcdir="${src.home}"
+	   destdir="${classes.home}"
+	   debug="${compile.debug}"
+	   deprecation="${compile.deprecation}"
+	   optimize="${compile.optimize}">
+      <classpath refid="compile.classpath"/>
+    </javac>
+
+    <javac srcdir="${test.home}"
+	   destdir="${classes.home}"
+	   debug="${compile.debug}"
+	   deprecation="${compile.deprecation}"
+	   optimize="${compile.optimize}">
+      <classpath refid="compile.classpath"/>
+    </javac>
+    
+    <!-- Copy application resources -->
+    <copy  todir="${classes.home}">
+      <fileset dir="${src.home}" excludes="**/*.java"/>
+    </copy>
+  </target>
+  
+  <target name="clean"
+    description="Delete old build and dist directories">
+    <delete dir="${build.home}"/>
+    <delete dir="${dist.dir}"/>
+    <delete dir="${reports.tests}"/>
+  </target>
+
+   <target name = "jar" depends = "compile">
+     <mkdir dir = "${dist.dir}"/>
+
+     <jar jarfile = "${dist.dir}/${app.name}.jar"
+          basedir = "${classes.home}" 
+          manifest = "${etc.dir}/manifest.mf"/>
+   </target>
+
+
+   <target name="unit-test" depends="compile">
+     <mkdir dir="${reports.tests}"/>
+
+     <junit printsummary="yes" haltonfailure="yes">
+       <classpath refid="compile.classpath"/>
+       <formatter type="plain"/>
+       <batchtest fork="yes" todir="${reports.tests}">
+         <fileset dir="${test.home}">
+           <include name="**/*Test*.java"/>
+         </fileset>
+       </batchtest>
+     </junit>
+   </target>
+
+</project>
